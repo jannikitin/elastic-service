@@ -1,17 +1,16 @@
-version: "3.8"
 services:
   postgres:
     image: postgres:17-alpine
-    container_name: award-postgres
+    container_name: elastic-db
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=postgres
     networks:
-      - award-net
+      - elastic-net
     ports:
       - "5000:5432"
-
+#
 #  postgres_test:
 #    image: postgres:17-alpine
 #    container_name: test-db
@@ -25,6 +24,6 @@ services:
 #      - "5001:5432"
 
 networks:
-  award-net:
-    name: award-net
+  elastic-net:
+    name: elastic-net
     driver: bridge
