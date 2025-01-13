@@ -1,4 +1,6 @@
 import uuid
+from typing import List
+from typing import TYPE_CHECKING
 
 from database.base import Base
 from database.base import pk_uuid
@@ -8,6 +10,10 @@ from sqlalchemy import UniqueConstraint
 from sqlalchemy import UUID
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import relationship
+
+if TYPE_CHECKING:
+    from .employee import EmployeeOrm
 
 
 class CompanyOrm(Base):
@@ -25,3 +31,5 @@ class CompanyOrm(Base):
             name="company_employee_owner_user_id_FK",
         ),
     )
+
+    employees: Mapped[List["EmployeeOrm"]] = relationship(back_populates="company")

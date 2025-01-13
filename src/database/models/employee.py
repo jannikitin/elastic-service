@@ -1,4 +1,5 @@
 import uuid
+from typing import TYPE_CHECKING
 
 from database.base import Base
 from database.base import pk_uuid
@@ -9,6 +10,11 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from utils.access_models import CompanyRole
+
+
+if TYPE_CHECKING:
+    from .user import UserOrm
+    from .company import CompanyOrm
 
 
 class EmployeeOrm(Base):

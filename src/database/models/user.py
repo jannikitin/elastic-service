@@ -1,4 +1,5 @@
 import enum
+from typing import TYPE_CHECKING
 
 from database.base import Base
 from database.base import created_at
@@ -11,6 +12,10 @@ from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 from utils.access_models import PortalAccess
+
+
+if TYPE_CHECKING:
+    from .employee import EmployeeOrm
 
 
 class UserOrm(Base):
