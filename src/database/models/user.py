@@ -9,10 +9,11 @@ from sqlalchemy import String
 from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import relationship
 from utils.access_models import PortalAccess
 
 
-class User(Base):
+class UserOrm(Base):
     __tablename__ = "users"
 
     id: Mapped[pk_uuid]
@@ -28,4 +29,8 @@ class User(Base):
     __table_args__ = (
         UniqueConstraint("login", name="users_login_UK"),
         UniqueConstraint("email", name="users_email_UK"),
+    )
+
+    employee: Mapped["EmployeeOrm"] = relationship(
+        back_populates="user", cascade="all, delete-orphan"
     )
