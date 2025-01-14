@@ -25,11 +25,13 @@ class UserOrm(Base):
     login: Mapped[str] = mapped_column(String(32), nullable=False)
     email: Mapped[str] = mapped_column(String(256), nullable=False)
     hpass: Mapped[str] = mapped_column(String(60), nullable=False)
-    registration_data: Mapped[created_at]
+    registration_date: Mapped[created_at]
     access_level: Mapped[enum.Enum] = mapped_column(
         SaEnum(PortalAccess), nullable=False, default=PortalAccess.USER
     )
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    name: Mapped[str] = mapped_column(String(256), nullable=True)
+    lastname: Mapped[str] = mapped_column(String(256), nullable=True)
 
     __table_args__ = (
         UniqueConstraint("login", name="users_login_UK"),

@@ -2,6 +2,7 @@ import uuid
 from typing import TYPE_CHECKING
 
 from database.base import Base
+from database.base import created_at
 from database.base import pk_uuid
 from sqlalchemy import Enum as SaEnum
 from sqlalchemy import ForeignKeyConstraint
@@ -23,6 +24,7 @@ class EmployeeOrm(Base):
     user_id: Mapped[pk_uuid]
     company_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
     role: Mapped[CompanyRole] = mapped_column(SaEnum(CompanyRole), nullable=False)
+    took_office_date: Mapped[created_at]
 
     __table_args__ = (
         ForeignKeyConstraint(
@@ -36,5 +38,7 @@ class EmployeeOrm(Base):
         ),
     )
 
-    company: Mapped["CompanyOrm"] = relationship(back_populates="employees")
+    company: Mapped["CompanyOrm"] = relationship(
+        back_populates="employees", foreign_keys=[company_id]
+    )
     user: Mapped["UserOrm"] = relationship(back_populates="employee")

@@ -3,6 +3,7 @@ from typing import List
 from typing import TYPE_CHECKING
 
 from database.base import Base
+from database.base import created_at
 from database.base import pk_uuid
 from sqlalchemy import ForeignKeyConstraint
 from sqlalchemy import String
@@ -22,6 +23,7 @@ class CompanyOrm(Base):
     id: Mapped[pk_uuid]
     name: Mapped[str] = mapped_column(String(64), nullable=False)
     owner_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    registration_date: Mapped[created_at]
 
     __table_args__ = (
         UniqueConstraint("name", name="companies_name_UK"),
@@ -32,4 +34,6 @@ class CompanyOrm(Base):
         ),
     )
 
-    employees: Mapped[List["EmployeeOrm"]] = relationship(back_populates="company")
+    employees: Mapped[List["EmployeeOrm"]] = relationship(
+        back_populates="company", foreign_keys="[EmployeeOrm.company_id]"
+    )

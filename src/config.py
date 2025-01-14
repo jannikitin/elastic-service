@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     ALGORITHM: str
     SECRET_KEY: str
+    TIMEZONE: str
 
     model_config = SettingsConfigDict(env_file=ROOT_DIR / ".env")
 

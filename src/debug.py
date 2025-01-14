@@ -1,5 +1,9 @@
-from pathlib import Path
+from datetime import datetime
+from datetime import UTC
 
-ROOT_DIR = Path(__file__).parent
+from pytz import timezone
 
-print(ROOT_DIR)
+d1 = datetime.now(UTC)
+d2 = datetime.now(timezone("Europe/Moscow"))
+
+print(d1, d2.replace(tzinfo=None))
