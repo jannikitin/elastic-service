@@ -25,3 +25,20 @@ class CreateUserSchema(BaseModel):
                 detail=f"Invalid login {value}",
             )
         return value
+
+
+class CreateServiceSchema(BaseModel):
+    login: str = Field(..., min_length=4, max_length=32)
+    password: str = Field(..., min_length=8, max_length=64)
+    email: EmailStr
+    key: str
+
+    @field_validator("login")
+    @classmethod
+    def validate_login(cls, value):
+        if not re.match(LOGIN_REGEXP, value):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Invalid login {value}",
+            )
+        return value

@@ -9,6 +9,7 @@ from pytz import timezone
 from security import Hasher
 from sqlalchemy import Result
 from sqlalchemy import select
+from sqlalchemy import update
 from sqlalchemy.exc import DatabaseError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
@@ -17,7 +18,10 @@ from utils.access_models import PortalAccess
 
 class UserService:
     async def create_user(
-        self, user_schema: CreateUserSchema, session: AsyncSession
+        self,
+        user_schema: CreateUserSchema,
+        session: AsyncSession,
+        access: PortalAccess = PortalAccess.USER,
     ) -> UserOrm:
         async with session.begin():
             user = UserOrm(
@@ -26,7 +30,7 @@ class UserService:
                 registration_date=datetime.now(timezone(settings.TIMEZONE)).replace(
                     tzinfo=None
                 ),
-                access_level=PortalAccess.USER,
+                access_level=access,
                 hpass=Hasher.get_hashed_password(user_schema.password),
                 is_active=True,
             )
@@ -56,3 +60,14 @@ class UserService:
         async with session.begin():
             user = await session.get(UserOrm, user_id)
             return user
+
+    async def delete_user(self, user: UserOrm, session: AsyncSession):
+        q = (
+            update(UserOrm)
+            .where(UserOrm.id == user.id)
+            .values({"is_active": False})
+            .returning(UserOrm.id)
+        )
+        async with session.begin():
+            user_id: Result = await session.execute(q)
+            return user_id.one()[0]

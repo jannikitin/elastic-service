@@ -1,4 +1,3 @@
-import enum
 from typing import TYPE_CHECKING
 
 from database.base import Base
@@ -26,7 +25,7 @@ class UserOrm(Base):
     email: Mapped[str] = mapped_column(String(256), nullable=False)
     hpass: Mapped[str] = mapped_column(String(60), nullable=False)
     registration_date: Mapped[created_at]
-    access_level: Mapped[enum.Enum] = mapped_column(
+    access_level: Mapped[PortalAccess] = mapped_column(
         SaEnum(PortalAccess), nullable=False, default=PortalAccess.USER
     )
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)

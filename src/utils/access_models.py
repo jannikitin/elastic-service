@@ -1,3 +1,4 @@
+from enum import auto
 from enum import Enum
 
 
@@ -12,3 +13,10 @@ class CompanyRole(str, Enum):
     HR = "HR"
     MASTER_MENTOR = "MASTER_MENTOR"
     MENTOR = "MENTOR"
+
+
+class CRUDOperation(str, Enum):
+    READ = auto()
+    CREATE = auto()
+    UPDATE = auto()
+    DELETE = auto()
