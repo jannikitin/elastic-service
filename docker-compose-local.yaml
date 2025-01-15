@@ -10,18 +10,18 @@ services:
       - elastic-net
     ports:
       - "5000:5432"
-#
-#  postgres_test:
-#    image: postgres:17-alpine
-#    container_name: test-db
-#    environment:
-#      - POSTGRES_USER=postgres_test
-#      - POSTGRES_PASSWORD=postgres_test
-#      - POSTGRES_DB=postgres_test
-#    networks:
-#      - award-net
-#    ports:
-#      - "5001:5432"
+
+  postgres_test:
+    image: postgres:17-alpine
+    container_name: test-db
+    environment:
+      - POSTGRES_USER=postgres_test
+      - POSTGRES_PASSWORD=postgres_test
+      - POSTGRES_DB=postgres_test
+    networks:
+      - elastic-net
+    ports:
+      - "5001:5432"
 
 networks:
   elastic-net:
