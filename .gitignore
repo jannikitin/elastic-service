@@ -1,3 +1,4 @@
 .env
 .idea/
 src/debug.py
+data/log/*

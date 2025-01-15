@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings
 from pydantic_settings import SettingsConfigDict
 
 ROOT_DIR = Path(__file__).parent.parent
+DATA_DIR = ROOT_DIR / "data"
 
 
 class Settings(BaseSettings):
