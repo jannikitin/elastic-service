@@ -30,18 +30,16 @@ async def create_service(
 
 
 @admin_router.patch(
-    "/service/{user_id}",
+    "/service/grant/{user_id}/",
     status_code=status.HTTP_200_OK,
     summary="Grant admin access to user",
 )
 async def grant_admin_access(
     user_id: str,
     session: AsyncSession = Depends(get_session),
-    service: UserOrm = Depends(auth_service.get_current_user),
+    admin: UserOrm = Depends(auth_service.get_current_admin),
 ):
     user = await user_service.get_user_by_id(user_id, session)
-    if not await auth_service.verify(user, service, {CRUDOperation.UPDATE}):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
     user_id = await user_service.grant_admin_access(user, session)
     if user_id:
         return ShowUser(
@@ -58,16 +56,45 @@ async def grant_admin_access(
 
 
 @admin_router.patch(
-    "/activate/{user_id}", status_code=status.HTTP_200_OK, summary="Activate user"
+    "/service/remove/{user_id}/",
+    status_code=status.HTTP_200_OK,
+    summary="Remove admin access",
+)
+async def remove_admin_access(
+    user_id: str,
+    session: AsyncSession = Depends(get_session),
+    admin: UserOrm = Depends(auth_service.get_current_admin),
+):
+    user = await user_service.get_user_by_id(user_id, session)
+    if not await auth_service.verify(user, admin, {CRUDOperation.UPDATE}):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    user_id = await user_service.remove_admin_access(user, session)
+
+    if user_id:
+        return ShowUser(
+            id=user.id,
+            login=user.login,
+            email=user.email,
+            name=user.name,
+            lastname=user.lastname,
+        )
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User is not updated"
+        )
+
+
+@admin_router.patch(
+    "/activate/{user_id}/", status_code=status.HTTP_200_OK, summary="Activate user"
 )
 async def activate_user(
     user_id: str,
     session: AsyncSession = Depends(get_session),
-    service: UserOrm = Depends(auth_service.get_current_user),
+    admin: UserOrm = Depends(auth_service.get_current_admin),
 ):
 
     user = await user_service.get_user_by_id(user_id, session)
-    if not await auth_service.verify(user, service, {CRUDOperation.DELETE}):
+    if not await auth_service.verify(user, admin, {CRUDOperation.UPDATE}):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
     user_id = await user_service.activate_user(user, session)
     if user_id:

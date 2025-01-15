@@ -1,18 +1,21 @@
 import asyncio
 import os
 import subprocess
+from typing import List
 
 import httpx
 import pytest
 from api.schemas.create import CreateUserSchema
 from database import Base
 from database import get_session
+from database import UserOrm
 from main import app
 from security import create_jwt_token
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
+from utils.access_models import PortalAccess
 
 engine = create_async_engine(
     "postgresql+asyncpg://"
@@ -33,7 +36,7 @@ def event_loop():
     loop.close()
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="session", autouse=True)
 def run_migrations():
     project_root = os.path.abspath(
         os.path.dirname(__file__)
@@ -93,3 +96,28 @@ async def valid_user() -> CreateUserSchema:
 def get_token(user_id):
     token = create_jwt_token(data={"user_id": user_id.__str__()})
     return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture(scope="function")
+async def create_admins() -> List[str]:
+    """
+    returns admin_id, service_id
+    """
+    async with session_factory() as session:
+        async with session.begin():
+            admin = UserOrm(
+                login="admin",
+                email="admin@example.com",
+                hpass="12345678Aa",
+                access_level=PortalAccess.ADMIN,
+            )
+            service = UserOrm(
+                login="service",
+                email="service@example.com",
+                hpass="12345678Aa",
+                access_level=PortalAccess.SERVICE,
+            )
+            session.add_all([admin, service])
+            await session.flush()
+
+        return [admin.id.__str__(), service.id.__str__()]

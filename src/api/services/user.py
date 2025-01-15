@@ -108,7 +108,7 @@ class UserService:
                 detail="User is unactive",
             )
 
-        if user.access_level is PortalAccess.ADMIN:
+        if user.access_level in {PortalAccess.ADMIN, PortalAccess.SERVICE}:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="User is already granted",
@@ -137,6 +137,35 @@ class UserService:
             .values({"is_active": True})
             .returning(UserOrm.id)
         )
+        async with session.begin():
+            res: Result = await session.execute(q)
+            return res.one()[0]
+
+    async def remove_admin_access(self, user: UserOrm, session: AsyncSession):
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User is unactive",
+            )
+
+        if user.access_level is PortalAccess.SERVICE:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User is service account",
+            )
+        elif user.access_level is PortalAccess.USER:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User have no permission yet",
+            )
+
+        q = (
+            update(UserOrm)
+            .filter(UserOrm.id == user.id)
+            .values({"access_level": PortalAccess.USER})
+            .returning(UserOrm.id)
+        )
+
         async with session.begin():
             res: Result = await session.execute(q)
             return res.one()[0]
