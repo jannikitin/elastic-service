@@ -9,6 +9,7 @@ from fastapi import HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from jwt import InvalidTokenError
 from security import Hasher
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
@@ -58,7 +59,10 @@ class AuthService:
                 raise credentials_exception
         except InvalidTokenError:
             raise credentials_exception
-        user = await user_service.get_user_by_id(user_id, session)
+        try:
+            user = await user_service.get_user_by_id(user_id, session)
+        except DBAPIError:
+            raise credentials_exception
         if not user:
             raise credentials_exception
         return user

@@ -8,6 +8,7 @@ from api.schemas.create import CreateUserSchema
 from database import Base
 from database import get_session
 from main import app
+from security import create_jwt_token
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -87,3 +88,8 @@ async def valid_user() -> CreateUserSchema:
     return CreateUserSchema(
         login="test_login", password="12345678Aa", email="test@example.com"
     )
+
+
+def get_token(user_id):
+    token = create_jwt_token(data={"user_id": user_id.__str__()})
+    return {"Authorization": f"Bearer {token}"}
