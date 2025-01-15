@@ -3,6 +3,7 @@ from functools import wraps
 from typing import Type
 
 from api.schemas.create import CreateUserSchema
+from api.schemas.update import UserUpdateSchema
 from config import settings
 from database import UserOrm
 from fastapi import HTTPException
@@ -169,3 +170,13 @@ class UserService:
         async with session.begin():
             res: Result = await session.execute(q)
             return res.one()[0]
+
+    async def update_user(
+        self, user: UserOrm, schema: UserUpdateSchema, session: AsyncSession
+    ):
+        async with session.begin():
+            session.add(user)
+            for key, value in schema.model_dump().items():
+                setattr(user, key, value)
+            await session.flush()
+            return user

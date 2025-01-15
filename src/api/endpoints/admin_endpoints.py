@@ -1,5 +1,5 @@
 from api.schemas.create import CreateServiceSchema
-from api.schemas.read import ShowUser
+from api.schemas.read import ShowUserSchema
 from api.services import auth_service
 from api.services import user_service
 from config import settings
@@ -42,7 +42,7 @@ async def grant_admin_access(
     user = await user_service.get_user_by_id(user_id, session)
     user_id = await user_service.grant_admin_access(user, session)
     if user_id:
-        return ShowUser(
+        return ShowUserSchema(
             id=user.id,
             login=user.login,
             email=user.email,
@@ -71,7 +71,7 @@ async def remove_admin_access(
     user_id = await user_service.remove_admin_access(user, session)
 
     if user_id:
-        return ShowUser(
+        return ShowUserSchema(
             id=user.id,
             login=user.login,
             email=user.email,
@@ -98,7 +98,7 @@ async def activate_user(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
     user_id = await user_service.activate_user(user, session)
     if user_id:
-        return ShowUser(
+        return ShowUserSchema(
             id=user.id,
             login=user.login,
             email=user.email,

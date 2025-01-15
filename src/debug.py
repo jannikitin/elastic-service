@@ -1,4 +1,4 @@
-all_s = {"1", "2", "3"}
-allowed = {"1", "2"}
+from api.schemas.update import UserUpdateSchema
 
-print(all_s - allowed)
+u = UserUpdateSchema(login="aswefe", name="", email="jasda@example.com")
+print(u)
