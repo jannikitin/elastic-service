@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import wraps
 from typing import Type
 
 from api.schemas.create import CreateUserSchema
@@ -11,12 +12,31 @@ from sqlalchemy import Result
 from sqlalchemy import select
 from sqlalchemy import update
 from sqlalchemy.exc import DatabaseError
+from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from utils.access_models import PortalAccess
 
 
 class UserService:
+    @staticmethod
+    def not_found(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            not_found_ex = HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+            )
+            try:
+                result = await func(*args, **kwargs)
+            except DBAPIError:
+                raise not_found_ex
+            else:
+                if result is None:
+                    raise not_found_ex
+            return result
+
+        return wrapper
+
     async def create_user(
         self,
         user_schema: CreateUserSchema,
@@ -44,24 +64,33 @@ class UserService:
                 )
             return user
 
+    @not_found
     async def get_user_by_email(self, email, session: AsyncSession) -> UserOrm:
         q = select(UserOrm).filter(UserOrm.email == email)
         async with session.begin():
             user: Result = await session.execute(q)
             return user.scalar()
 
+    @not_found
     async def get_user_by_login(self, login, session: AsyncSession) -> UserOrm:
         q = select(UserOrm).filter(UserOrm.login == login)
         async with session.begin():
             user: Result = await session.execute(q)
             return user.scalar()
 
+    @not_found
     async def get_user_by_id(self, user_id, session: AsyncSession) -> Type[UserOrm]:
         async with session.begin():
             user = await session.get(UserOrm, user_id)
             return user
 
     async def delete_user(self, user: UserOrm, session: AsyncSession):
+        if user.is_active is False:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User is already unregistered",
+            )
+
         q = (
             update(UserOrm)
             .where(UserOrm.id == user.id)
@@ -69,5 +98,45 @@ class UserService:
             .returning(UserOrm.id)
         )
         async with session.begin():
-            user_id: Result = await session.execute(q)
-            return user_id.one()[0]
+            res: Result = await session.execute(q)
+            return res.one()[0]
+
+    async def grant_admin_access(self, user: UserOrm, session: AsyncSession):
+        if not user.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User is unactive",
+            )
+
+        if user.access_level is PortalAccess.ADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User is already granted",
+            )
+
+        q = (
+            update(UserOrm)
+            .filter(UserOrm.id == user.id)
+            .values({"access_level": PortalAccess.ADMIN})
+            .returning(UserOrm.id)
+        )
+        async with session.begin():
+            res: Result = await session.execute(q)
+            return res.one()[0]
+
+    async def activate_user(self, user: UserOrm, session: AsyncSession):
+        if user.is_active is True:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User is already active",
+            )
+
+        q = (
+            update(UserOrm)
+            .filter(UserOrm.id == user.id)
+            .values({"is_active": True})
+            .returning(UserOrm.id)
+        )
+        async with session.begin():
+            res: Result = await session.execute(q)
+            return res.one()[0]

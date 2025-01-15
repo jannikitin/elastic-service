@@ -1,9 +1,7 @@
-from api.schemas.create import CreateServiceSchema
 from api.schemas.create import CreateUserSchema
 from api.schemas.read import ShowUser
 from api.services import auth_service
 from api.services import user_service
-from config import settings
 from database import get_session
 from database import UserOrm
 from fastapi import APIRouter
@@ -12,7 +10,6 @@ from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from utils.access_models import CRUDOperation
-from utils.access_models import PortalAccess
 
 user_router = APIRouter()
 
@@ -45,18 +42,6 @@ async def get_me(current_user: UserOrm = Depends(auth_service.get_current_user))
         name=current_user.name,
         lastname=current_user.lastname,
     )
-
-
-@user_router.post("/service/", status_code=status.HTTP_201_CREATED)
-async def create_service(
-    service_data: CreateServiceSchema, session: AsyncSession = Depends(get_session)
-):
-    if service_data.key != settings.SECRET_KEY:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
-    user = await user_service.create_user(
-        service_data, session, access=PortalAccess.SERVICE
-    )
-    return {"message": "success", "login": user.login}
 
 
 @user_router.delete(

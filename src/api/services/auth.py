@@ -2,6 +2,7 @@ from abc import ABC
 from abc import abstractmethod
 from typing import Annotated
 from typing import Final
+from typing import Type
 
 import jwt
 from config import settings
@@ -95,7 +96,7 @@ class AuthService(VerificationTransfer):
             user = await user_service.get_user_by_email(login, session)
         else:
             user = await user_service.get_user_by_login(login, session)
-        if not user:
+        if not user or user.is_active is False:
             return False
         if not Hasher.validate_password(password, user.hpass):
             return False
@@ -110,7 +111,7 @@ class AuthService(VerificationTransfer):
         self,
         token: Annotated[str, Depends(oauth_scheme)],
         session: AsyncSession = Depends(get_session),
-    ) -> UserOrm | None:
+    ) -> Type[UserOrm] | None:
         """
         Dependency for JWT validation and authorization
         :param token:
@@ -135,6 +136,6 @@ class AuthService(VerificationTransfer):
             user = await user_service.get_user_by_id(user_id, session)
         except DBAPIError:
             raise credentials_exception
-        if not user:
+        if not user or user.is_active == False:
             raise credentials_exception
         return user
