@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from api.authorization import AuthorizationSystem
 from api.schemas.create import CreateUserSchema
 from api.schemas.read import ShowUserSchema
@@ -50,12 +52,12 @@ async def get_me(current_user: UserOrm = Depends(auth_service.get_current_user))
     summary="Deactivate user to unable login",
 )
 async def delete_user(
-    user_id: str,
+    user_id: UUID,
     session: AsyncSession = Depends(get_session),
     current_user: UserOrm = Depends(auth_service.get_current_user),
 ):
     user_to_delete = await user_service.get_user_by_id(user_id, session)
-    AuthorizationSystem.can_delete(current_user, user_to_delete)
+    AuthorizationSystem.can_delete_user(current_user, user_to_delete)
 
     user_id = await user_service.delete_user(user_to_delete, session)
     return {"message": "User deleted", "user_id": user_id.__str__()}
@@ -68,13 +70,13 @@ async def delete_user(
     response_model=ShowUserSchema,
 )
 async def update_user(
-    user_id: str,
+    user_id: UUID,
     body: UserUpdateSchema,
     session: AsyncSession = Depends(get_session),
     current_user: UserOrm = Depends(auth_service.get_current_user),
 ):
     user_to_update = await user_service.get_user_by_id(user_id, session)
-    AuthorizationSystem.can_update(current_user, user_to_update)
+    AuthorizationSystem.can_update_user(current_user, user_to_update)
     updated_user = await user_service.update_user(user_to_update, body, session)
     return ShowUserSchema(
         login=updated_user.login,
@@ -90,7 +92,7 @@ async def update_user(
     summary="Get public user data",
     response_model=ShowUserSchema,
 )
-async def get_public_user(user_id: str, session: AsyncSession = Depends(get_session)):
+async def get_public_user(user_id: UUID, session: AsyncSession = Depends(get_session)):
     user = await user_service.get_user_by_id(user_id, session)
     return ShowUserSchema(
         login=user.login, email=user.email, name=user.name, lastname=user.lastname

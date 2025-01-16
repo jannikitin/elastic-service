@@ -12,3 +12,9 @@ class CompanyRole(str, Enum):
     HR = "HR"
     MASTER_MENTOR = "MASTER_MENTOR"
     MENTOR = "MENTOR"
+
+
+class InviteRole(str, Enum):
+    HR = "HR"
+    MASTER_MENTOR = "MASTER_MENTOR"
+    MENTOR = "MENTOR"

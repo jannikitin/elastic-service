@@ -1,5 +1,6 @@
 from typing import Type
 
+import sqlalchemy
 from api.schemas.create import CreateCompanySchema
 from database import CompanyOrm
 from database import EmployeeOrm
@@ -48,3 +49,23 @@ class CompanyService:
             q = select(EmployeeOrm).filter(EmployeeOrm.user_id == user_id)
             res = await session.execute(q)
             return res.scalar()
+
+    async def invite_member(
+        self, email: str, role: CompanyRole, company: CompanyOrm, session: AsyncSession
+    ) -> EmployeeOrm | None:
+        async with session.begin():
+            q = select(UserOrm).filter(UserOrm.email == email)
+            res = await session.execute(q)
+            if not res:
+                return None
+            user = res.scalar()
+            employee = EmployeeOrm(role=role)
+            employee.user = user
+            employee.company = company
+
+            session.add_all([employee])
+            try:
+                await session.flush()
+            except sqlalchemy.exc.IntegrityError:
+                return None
+            return employee

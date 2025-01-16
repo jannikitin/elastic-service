@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from api.authorization import AuthorizationSystem
 from api.exc import forbidden_exception
 from api.schemas.create import CreateServiceSchema
@@ -35,7 +37,7 @@ async def create_service(
     summary="Grant admin access to user",
 )
 async def grant_admin_access(
-    user_id: str,
+    user_id: UUID,
     session: AsyncSession = Depends(get_session),
     admin: UserOrm = Depends(auth_service.get_current_admin),
 ):
@@ -61,7 +63,7 @@ async def grant_admin_access(
     summary="Remove admin access",
 )
 async def remove_admin_access(
-    user_id: str,
+    user_id: UUID,
     session: AsyncSession = Depends(get_session),
     admin: UserOrm = Depends(auth_service.get_current_admin),
 ):
@@ -87,13 +89,13 @@ async def remove_admin_access(
     "/activate/{user_id}/", status_code=status.HTTP_200_OK, summary="Activate user"
 )
 async def activate_user(
-    user_id: str,
+    user_id: UUID,
     session: AsyncSession = Depends(get_session),
     admin: UserOrm = Depends(auth_service.get_current_admin),
 ):
 
     user = await user_service.get_user_by_id(user_id, session)
-    AuthorizationSystem.can_update(admin, user)
+    AuthorizationSystem.can_update_user(admin, user)
     user_id = await user_service.activate_user(user, session)
     if user_id:
         return ShowUserSchema(

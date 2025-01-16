@@ -23,7 +23,7 @@ class BaseValidator:
 
     def validate(self, user: UserOrm, target: Any):
         if self._next_validator:
-            self._next_validator.validate(user, target)
+            self._next_validator.validate(user, target=target)
         return
 
     @property
