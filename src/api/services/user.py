@@ -177,6 +177,7 @@ class UserService:
         async with session.begin():
             session.add(user)
             for key, value in schema.model_dump().items():
-                setattr(user, key, value)
+                if value:
+                    setattr(user, key, value)
             await session.flush()
             return user

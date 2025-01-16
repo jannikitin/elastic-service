@@ -1,6 +1,4 @@
-try:
-    10 / 0
-except ZeroDivisionError as e:
-    print(e.__repr__())
-    print(e.args)
-    # print(e.__annotations__)
+from api.schemas.update import UserUpdateSchema
+
+
+UserUpdateSchema.model_validate({})

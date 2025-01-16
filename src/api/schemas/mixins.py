@@ -19,11 +19,12 @@ class LoginMixin(BaseModel):
     @field_validator("login")
     @classmethod
     def validate_login(cls, value):
-        if not re.match(LOGIN_REGEXP, value):
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail=f"Invalid login {value}",
-            )
+        if value:
+            if not re.match(LOGIN_REGEXP, value):
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"Invalid login {value}",
+                )
         return value
 
 
@@ -35,21 +36,23 @@ class FirstAndLastNameMixin(BaseModel):
     @field_validator("name")
     @classmethod
     def validate_first_name(cls, value: str):
-        if not value.isalpha():
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="First name should contain only letters",
-            )
+        if value:
+            if not value.isalpha():
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="First name should contain only letters",
+                )
         return value
 
     @field_validator("lastname")
     @classmethod
     def validate_last_name(cls, value: str):
-        if not value.isalpha():
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Last name should contain only letters",
-            )
+        if value:
+            if not value.isalpha():
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="Last name should contain only letters",
+                )
         return value
 
 
