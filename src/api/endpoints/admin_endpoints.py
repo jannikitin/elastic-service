@@ -1,3 +1,4 @@
+from api.exc import forbidden_exception
 from api.schemas.create import CreateServiceSchema
 from api.schemas.read import ShowUserSchema
 from api.services import auth_service
@@ -10,9 +11,7 @@ from fastapi import Depends
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-from utils.access_models import CRUDOperation
 from utils.access_models import PortalAccess
-
 
 admin_router = APIRouter()
 
@@ -22,7 +21,7 @@ async def create_service(
     service_data: CreateServiceSchema, session: AsyncSession = Depends(get_session)
 ):
     if service_data.key != settings.SECRET_KEY:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+        raise forbidden_exception
     user = await user_service.create_user(
         service_data, session, access=PortalAccess.SERVICE
     )
@@ -66,8 +65,7 @@ async def remove_admin_access(
     admin: UserOrm = Depends(auth_service.get_current_admin),
 ):
     user = await user_service.get_user_by_id(user_id, session)
-    if not await auth_service.verify(user, admin, {CRUDOperation.UPDATE}):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    auth_service.can_remove_admin_access(admin, user)
     user_id = await user_service.remove_admin_access(user, session)
 
     if user_id:
@@ -94,8 +92,7 @@ async def activate_user(
 ):
 
     user = await user_service.get_user_by_id(user_id, session)
-    if not await auth_service.verify(user, admin, {CRUDOperation.UPDATE}):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    auth_service.can_update(admin, user)
     user_id = await user_service.activate_user(user, session)
     if user_id:
         return ShowUserSchema(

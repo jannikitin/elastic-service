@@ -7,10 +7,8 @@ from database import get_session
 from database import UserOrm
 from fastapi import APIRouter
 from fastapi import Depends
-from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
-from utils.access_models import CRUDOperation
 
 user_router = APIRouter()
 
@@ -56,11 +54,7 @@ async def delete_user(
     current_user: UserOrm = Depends(auth_service.get_current_user),
 ):
     user_to_delete = await user_service.get_user_by_id(user_id, session)
-    if (
-        await auth_service.verify(user_to_delete, current_user, {CRUDOperation.DELETE})
-        is False
-    ):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    auth_service.can_delete(current_user, user_to_delete)
 
     user_id = await user_service.delete_user(user_to_delete, session)
     return {"message": "User deleted", "user_id": user_id.__str__()}
@@ -79,10 +73,7 @@ async def update_user(
     current_user: UserOrm = Depends(auth_service.get_current_user),
 ):
     user_to_update = await user_service.get_user_by_id(user_id, session)
-    if not await auth_service.verify(
-        user_to_update, current_user, {CRUDOperation.UPDATE}
-    ):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden")
+    auth_service.can_update(current_user, user_to_update)
     updated_user = await user_service.update_user(user_to_update, body, session)
     return ShowUserSchema(
         login=updated_user.login,

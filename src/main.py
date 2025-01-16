@@ -22,6 +22,7 @@ app.include_router(admin_router, prefix="/admin", tags=["admin"])
 
 @app.get("/")
 async def root():
+    10 / 0
     return {"message": "OK!"}
 
 
@@ -35,7 +36,7 @@ async def middleware(request: Request, call_next):
     except Exception as e:
         error_type = type(e).__name__
         error_message = str(e)
-        file_logger.exception(
+        file_logger.error(
             f"Exception for {request.method} [{request_id}] request\n"
             f"Error type: {error_type}, Message: {error_message}"
         )
