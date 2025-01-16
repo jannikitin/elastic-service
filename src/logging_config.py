@@ -1,35 +1,34 @@
 import logging
 import os
-from sys import stdout
 
 from config import DATA_DIR
 
 LOG_DIR = DATA_DIR / "log"
-EXCEPTIONS_FILE = LOG_DIR / "exception_log.log"
-STREAM_LOGGER = "STREAM"
-FILE_LOGGER = "FILE"
+REQUESTS_LOG_FILE = LOG_DIR / "requests.log"
+EXCEPTIONS_LOG_FILE = LOG_DIR / "exceptions.log"
+REQUESTS_LOGGER = "REQUESTS"
+EXCEPTIONS_LOGGER = "EXCEPTIONS"
 
-if not os.path.exists(EXCEPTIONS_FILE):
-    with open(EXCEPTIONS_FILE, "w"):
-        pass
+for path in [REQUESTS_LOG_FILE, EXCEPTIONS_LOG_FILE]:
+    if not os.path.exists(path):
+        with open(path, "w"):
+            pass
 
-stream_logger = logging.getLogger(STREAM_LOGGER)
+# requests logger
+request_logger = logging.getLogger(REQUESTS_LOGGER)
 
-sl_stream_handler = logging.StreamHandler(stream=stdout)
-sl_formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+request_log_fh = logging.FileHandler(filename=REQUESTS_LOG_FILE, mode="a")
+request_log_fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+request_log_fh.setFormatter(request_log_fmt)
+request_logger.addHandler(request_log_fh)
 
-sl_stream_handler.setFormatter(sl_formatter)
-stream_logger.addHandler(sl_stream_handler)
+# exceptions logger
+exceptions_logger = logging.getLogger(EXCEPTIONS_LOGGER)
 
-file_logger = logging.getLogger(FILE_LOGGER)
+exceptions_log_fh = logging.FileHandler(filename=EXCEPTIONS_LOG_FILE, mode="a")
+exceptions_log_fmt = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+exceptions_log_fh.setFormatter(exceptions_log_fmt)
+exceptions_logger.addHandler(exceptions_log_fh)
 
-fl_file_handler = logging.FileHandler(
-    filename=DATA_DIR / "log" / "exception_log.log", mode="a"
-)
-fl_formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
-fl_file_handler.setFormatter(fl_formatter)
-file_logger.addHandler(fl_file_handler)
-
-
-file_logger.setLevel(logging.INFO)
-stream_logger.setLevel(logging.INFO)
+request_logger.setLevel(logging.INFO)
+exceptions_logger.setLevel(logging.ERROR)
