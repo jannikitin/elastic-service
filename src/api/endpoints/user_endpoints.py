@@ -1,3 +1,4 @@
+from api.authorization import AuthorizationSystem
 from api.schemas.create import CreateUserSchema
 from api.schemas.read import ShowUserSchema
 from api.schemas.update import UserUpdateSchema
@@ -54,7 +55,7 @@ async def delete_user(
     current_user: UserOrm = Depends(auth_service.get_current_user),
 ):
     user_to_delete = await user_service.get_user_by_id(user_id, session)
-    auth_service.can_delete(current_user, user_to_delete)
+    AuthorizationSystem.can_delete(current_user, user_to_delete)
 
     user_id = await user_service.delete_user(user_to_delete, session)
     return {"message": "User deleted", "user_id": user_id.__str__()}
@@ -73,7 +74,7 @@ async def update_user(
     current_user: UserOrm = Depends(auth_service.get_current_user),
 ):
     user_to_update = await user_service.get_user_by_id(user_id, session)
-    auth_service.can_update(current_user, user_to_update)
+    AuthorizationSystem.can_update(current_user, user_to_update)
     updated_user = await user_service.update_user(user_to_update, body, session)
     return ShowUserSchema(
         login=updated_user.login,

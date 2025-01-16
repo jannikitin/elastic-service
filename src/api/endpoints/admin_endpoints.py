@@ -1,3 +1,4 @@
+from api.authorization import AuthorizationSystem
 from api.exc import forbidden_exception
 from api.schemas.create import CreateServiceSchema
 from api.schemas.read import ShowUserSchema
@@ -65,7 +66,7 @@ async def remove_admin_access(
     admin: UserOrm = Depends(auth_service.get_current_admin),
 ):
     user = await user_service.get_user_by_id(user_id, session)
-    auth_service.can_remove_admin_access(admin, user)
+    AuthorizationSystem.can_remove_admin_access(admin, user)
     user_id = await user_service.remove_admin_access(user, session)
 
     if user_id:
@@ -92,7 +93,7 @@ async def activate_user(
 ):
 
     user = await user_service.get_user_by_id(user_id, session)
-    auth_service.can_update(admin, user)
+    AuthorizationSystem.can_update(admin, user)
     user_id = await user_service.activate_user(user, session)
     if user_id:
         return ShowUserSchema(

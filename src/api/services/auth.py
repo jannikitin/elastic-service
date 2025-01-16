@@ -2,10 +2,6 @@ from typing import Annotated
 from typing import Type
 
 import jwt
-from api.authorization.user_validators import CanDeleteUser
-from api.authorization.user_validators import CanReadUser
-from api.authorization.user_validators import CanRemoveAdminAccess
-from api.authorization.user_validators import CanUpdateUser
 from config import settings
 from database import get_session
 from database import UserOrm
@@ -18,12 +14,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from utils.access_models import PortalAccess
 
+from .company import CompanyService
 from .user import UserService
 
 user_service = UserService()
+company_service = CompanyService()
 
 
-class AuthService:
+class AuthenticationService:
 
     oauth_scheme = OAuth2PasswordBearer(tokenUrl="/login/")
 
@@ -80,19 +78,3 @@ class AuthService:
                 status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden"
             )
         return user
-
-    def can_delete(self, user: UserOrm, target: UserOrm):
-        verificator = CanDeleteUser()
-        verificator.validate(user, target)
-
-    def can_read(self, user: UserOrm, target: UserOrm):
-        verificator = CanReadUser()
-        verificator.validate(user, target)
-
-    def can_update(self, user: UserOrm, target: UserOrm):
-        verificator = CanUpdateUser()
-        verificator.validate(user, target)
-
-    def can_remove_admin_access(self, user: UserOrm, target: UserOrm):
-        verificator = CanRemoveAdminAccess()
-        verificator.validate(user, target)
