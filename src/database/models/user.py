@@ -38,5 +38,5 @@ class UserOrm(Base):
     )
 
     employee: Mapped["EmployeeOrm"] = relationship(
-        back_populates="user", cascade="all, delete-orphan"
+        back_populates="user", cascade="all, delete-orphan", lazy="joined"
     )

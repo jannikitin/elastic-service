@@ -1,3 +1,5 @@
+from typing import Type
+
 from api.schemas.create import CreateCompanySchema
 from database import CompanyOrm
 from database import EmployeeOrm
@@ -29,14 +31,20 @@ class CompanyService:
             await session.flush()
         return company
 
+    async def get_company_by_id(
+        self, company_id: str, session: AsyncSession
+    ) -> Type[CompanyOrm]:
+        async with session.begin():
+            company = await session.get(CompanyOrm, company_id)
+            return company
+
     async def get_company_member(self):
         pass
 
-    async def get_employee_company_id(
+    async def get_employee_by_user_id(
         self, user_id: str, session: AsyncSession
     ) -> str | None:
         async with session.begin():
             q = select(EmployeeOrm).filter(EmployeeOrm.user_id == user_id)
             res = await session.execute(q)
-            if res:
-                return res.scalar()
+            return res.scalar()

@@ -35,6 +35,22 @@ async def create_company(
     )
 
 
-@company_router.get("/{company_id}/")
-async def get_company(company_id: str):
-    pass
+@company_router.get(
+    "/{company_id}/",
+    status_code=status.HTTP_200_OK,
+    summary="Get a company by id",
+    response_model=ShowCompany,
+)
+async def get_company(
+    company_id: str,
+    current_user: UserOrm = Depends(auth_service.get_current_user),
+    session: AsyncSession = Depends(get_session),
+):
+
+    company = await company_service.get_company_by_id(company_id, session)
+    await AuthorizationSystem.can_read_company(current_user, company)
+    return ShowCompany(
+        id=company.id,
+        name=company.name,
+        owner_id=company.owner_id,
+    )

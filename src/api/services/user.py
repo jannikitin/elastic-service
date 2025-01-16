@@ -1,5 +1,4 @@
 from datetime import datetime
-from functools import wraps
 from typing import Type
 
 from api.schemas.create import CreateUserSchema
@@ -13,31 +12,12 @@ from sqlalchemy import Result
 from sqlalchemy import select
 from sqlalchemy import update
 from sqlalchemy.exc import DatabaseError
-from sqlalchemy.exc import DBAPIError
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from utils.access_models import PortalAccess
 
 
 class UserService:
-    @staticmethod
-    def not_found(func):
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            not_found_ex = HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-            )
-            try:
-                result = await func(*args, **kwargs)
-            except DBAPIError:
-                raise not_found_ex
-            else:
-                if result is None:
-                    raise not_found_ex
-            return result
-
-        return wrapper
-
     async def create_user(
         self,
         user_schema: CreateUserSchema,
@@ -65,21 +45,18 @@ class UserService:
                 )
             return user
 
-    @not_found
     async def get_user_by_email(self, email, session: AsyncSession) -> UserOrm:
         q = select(UserOrm).filter(UserOrm.email == email)
         async with session.begin():
             user: Result = await session.execute(q)
             return user.scalar()
 
-    @not_found
     async def get_user_by_login(self, login, session: AsyncSession) -> UserOrm:
         q = select(UserOrm).filter(UserOrm.login == login)
         async with session.begin():
             user: Result = await session.execute(q)
             return user.scalar()
 
-    @not_found
     async def get_user_by_id(self, user_id, session: AsyncSession) -> Type[UserOrm]:
         async with session.begin():
             user = await session.get(UserOrm, user_id)

@@ -22,7 +22,7 @@ async def test_get_me_unauth(client, valid_user):
     resp = await client.post("/users/registration/", data=valid_user.model_dump_json())
     assert resp.status_code == 201
     post_data = resp.json()
-    token_header = get_token(post_data["id"] + "123")
+    token_header = get_token(post_data["id"][::-1])
     resp = await client.get("/users/me/", headers=token_header)
     assert resp.status_code == 401
     assert resp.json() == {"detail": "Could not validate credentials"}
