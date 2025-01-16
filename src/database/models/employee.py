@@ -22,7 +22,7 @@ class EmployeeOrm(Base):
     __tablename__ = "employees"
 
     user_id: Mapped[pk_uuid]
-    company_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    company_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=True)
     role: Mapped[CompanyRole] = mapped_column(SaEnum(CompanyRole), nullable=False)
     took_office_date: Mapped[created_at]
 

@@ -14,11 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 from utils.access_models import PortalAccess
 
-from .company import CompanyService
 from .user import UserService
 
 user_service = UserService()
-company_service = CompanyService()
 
 
 class AuthenticationService:

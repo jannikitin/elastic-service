@@ -4,6 +4,7 @@ import uuid
 
 import uvicorn
 from api.endpoints.admin_endpoints import admin_router
+from api.endpoints.company_endpoints import company_router
 from api.endpoints.login_endpoints import login_router
 from api.endpoints.user_endpoints import user_router
 from fastapi import FastAPI
@@ -18,11 +19,11 @@ app = FastAPI(title="Elastic")
 app.include_router(user_router, prefix="/users", tags=["users"])
 app.include_router(login_router, prefix="/login", tags=["auth"])
 app.include_router(admin_router, prefix="/admin", tags=["admin"])
+app.include_router(company_router, prefix="/company", tags=["company"])
 
 
 @app.get("/")
 async def root():
-    10 / 0
     return {"message": "OK!"}
 
 
